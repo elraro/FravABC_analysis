@@ -54,7 +54,7 @@ for attr in attributes:
                 plt.xlabel("score")
                 plt.legend(loc='upper right')
             plt.tight_layout()
-            plt.savefig(attr + "_" + camera + "_" + light + ".png")
+            plt.savefig("histogramPlots/" + attr + "_" + camera + "_" + light + ".png")
             print("Leido " + attr + " " + camera + " " + light)
             plt.close()
 
