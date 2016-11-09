@@ -1,6 +1,5 @@
 import MySQLdb as Mdb
 import random
-from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,7 +8,6 @@ DB_HOST = "localhost"
 DB_USER = "frav"
 DB_PASS = "VXxL4UOLvB6wc01Y3Cxi"
 DB_NAME = "frav_ABC"
-FOLDER = "/media/alberto/Datos/FRAV_ALBERTO/"
 
 con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
 cur = con.cursor()
@@ -55,6 +53,6 @@ for attr in attributes:
                 plt.legend(loc='upper right')
             plt.tight_layout()
             plt.savefig("histogramPlots/" + attr + "_" + camera + "_" + light + ".png")
-            print("Leido " + attr + " " + camera + " " + light)
+            print("Readed " + attr + " " + camera + " " + light)
             plt.close()
 
