@@ -28,7 +28,7 @@ attributes = ["locateFace", "locateEyes", "backgroundUniformity", "isColor",
               "eye0Red", "eye0Tinted", "eye1X", "eye1Y", "eye1GazeFrontal", "eye1Open", "eye1Red", "eye1Tinted",
               "eyeDistance", "faceCenterX", "faceCenterY", "glasses", "grayScaleDensity", "height", "hotSpots",
               "isMale", "lengthOfHead", "mouthClosed", "naturalSkinColour", "numberOfFaces", "poseAngleRoll",
-              "sharpness", "width", "widthOfHead"]
+              "sharpness", "width", "widthOfHead", "camera", "light"]
 
 
 def draw_density(attr):
