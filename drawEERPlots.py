@@ -56,7 +56,7 @@ def calculate_eer_mean(attr):
 
     # primero vamos a calcular la media
     cur.execute(
-        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1")
+        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     average = str(data[0][0])
@@ -66,7 +66,7 @@ def calculate_eer_mean(attr):
         print(average)
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                average) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                average) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -132,7 +132,7 @@ def calculate_eer_binary(attr):
     for v in x:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                v) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                v) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -193,7 +193,7 @@ def calculate_eer_standard_desviation_mean(attr):
 
     # primero vamos a calcular la media y la desviacion tipica
     cur.execute(
-        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1")
+        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     mean = np.mean(data)
@@ -217,20 +217,20 @@ def calculate_eer_standard_desviation_mean(attr):
                 "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
                 f[0] + str(
                     down) + " AND i." + attr + f[1] + str(
-                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
         else:
             cur.execute(
                 "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
                 f[0] + str(
-                    down) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                    down) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data_aux = cur.fetchall()
             data_aux = np.asarray(data_aux)
             cur.execute(
                 "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
                 f[1] + str(
-                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
             data = np.concatenate((data, data_aux))
@@ -298,7 +298,7 @@ def calculate_eer_0(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -362,7 +362,7 @@ def calculate_eer_05(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0.5) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                0.5) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -426,7 +426,7 @@ def calculate_eer_0_rest(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -492,7 +492,7 @@ def calculate_eer_rest(attribute):
     for value in values:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                value) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye0Confidence <= 6 AND i.eye1Confidence >= 0 AND i.eye1Confidence <= 6 AND i.faceConfidence >= 0 AND i.faceConfidence <= 6 AND i.numberOfFaces = 1 ")
+                value) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -551,12 +551,12 @@ def calculate_eer_rest(attribute):
 
 
 pool = Pool(20)
-# pool.map(calculate_eer_mean, umbral_mean)
-# pool.map(calculate_eer_binary, binary_attributes)
-# pool.map(calculate_eer_standard_desviation_mean, standard_deviation_mean)
-# pool.map(calculate_eer_0, umbral_0)
-# pool.map(calculate_eer_05, umbral_05)
-# pool.map(calculate_eer_0_rest, umbral_0_rest)
+pool.map(calculate_eer_mean, umbral_mean)
+pool.map(calculate_eer_binary, binary_attributes)
+pool.map(calculate_eer_standard_desviation_mean, standard_deviation_mean)
+pool.map(calculate_eer_0, umbral_0)
+pool.map(calculate_eer_05, umbral_05)
+pool.map(calculate_eer_0_rest, umbral_0_rest)
 pool.map(calculate_eer_rest, rest)
 pool.close()
 pool.join()
