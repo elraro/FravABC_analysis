@@ -63,7 +63,6 @@ def calculate_eer_mean(attr):
     formules = ["<", ">"]
     plt.figure()
     for f in formules:
-        print(average)
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
                 average) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
@@ -551,12 +550,12 @@ def calculate_eer_rest(attribute):
 
 
 pool = Pool(20)
-pool.map(calculate_eer_mean, umbral_mean)
-pool.map(calculate_eer_binary, binary_attributes)
+# pool.map(calculate_eer_mean, umbral_mean)
+# pool.map(calculate_eer_binary, binary_attributes)
 pool.map(calculate_eer_standard_desviation_mean, standard_deviation_mean)
-pool.map(calculate_eer_0, umbral_0)
-pool.map(calculate_eer_05, umbral_05)
-pool.map(calculate_eer_0_rest, umbral_0_rest)
-pool.map(calculate_eer_rest, rest)
+# pool.map(calculate_eer_0, umbral_0)
+# pool.map(calculate_eer_05, umbral_05)
+# pool.map(calculate_eer_0_rest, umbral_0_rest)
+# pool.map(calculate_eer_rest, rest)
 pool.close()
 pool.join()
