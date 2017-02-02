@@ -43,7 +43,8 @@ umbral_0 = ["ethnicityAsian", "ethnicityBlack", "ethnicityWhite", "glasses", "is
 umbral_05 = ["naturalSkinColour", "sharpness"]
 
 # umbral 0, resto
-umbral_0_rest = ["eye0Red", "eye1Red", "hotSpots"]
+umbral_0_rest = ["eye0Red", "eye1Red", "hotSpots", "deviationFromFrontalPose", "deviationFromUniformLighting",
+                 "eye0GazeFrontal", "eye1GazeFrontal", "ethnicityAsian", "ethnicityBlack", "ethnicityWhite"]
 
 rest = [("camera", [1, 2]), ("light", [1, 2, 3, 4]), ("Features_Ethnicity", [0, 1, 2]), ("height", [720, 1920]),
         ("width", [960, 1080])]
@@ -56,7 +57,7 @@ def calculate_eer_mean(attr):
 
     # primero vamos a calcular la media
     cur.execute(
-        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
+        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     average = str(data[0][0])
@@ -65,7 +66,7 @@ def calculate_eer_mean(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                average) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                average) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -131,7 +132,7 @@ def calculate_eer_binary(attr):
     for v in x:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                v) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                v) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -192,7 +193,7 @@ def calculate_eer_standard_desviation_mean(attr):
 
     # primero vamos a calcular la media y la desviacion tipica
     cur.execute(
-        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
+        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     mean = np.mean(data)
@@ -200,7 +201,7 @@ def calculate_eer_standard_desviation_mean(attr):
     top = mean + deviation
     down = mean - deviation
     lock.acquire()
-    print("Media y desviacion tipica")
+    print("calculate_eer_standard_desviation_mean")
     print(attr)
     print(mean)
     print(deviation)
@@ -213,26 +214,21 @@ def calculate_eer_standard_desviation_mean(attr):
     for f in formules:
         if f[0] == ">":
             cur.execute(
-                "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
+                "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i." + attr +
                 f[0] + str(
                     down) + " AND i." + attr + f[1] + str(
-                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
         else:
             cur.execute(
-                "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
+                "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i." + attr +
                 f[0] + str(
-                    down) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
-            data_aux = cur.fetchall()
-            data_aux = np.asarray(data_aux)
-            cur.execute(
-                "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr +
+                    down) + " OR i." + attr +
                 f[1] + str(
-                    top) + "AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
-            data = np.concatenate((data, data_aux))
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
@@ -277,9 +273,9 @@ def calculate_eer_standard_desviation_mean(attr):
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
         if f[0] == ">":
-            plt.title(attr + " dentro media")
+            plt.title(attr + " inside deviation")
         else:
-            plt.title(attr + " fuera media")
+            plt.title(attr + " outside deviation")
     plt.tight_layout()
     plt.savefig("EERPlots/" + attr + "_standard_desviation_mean.png")
     print("Readed " + attr)
@@ -297,7 +293,7 @@ def calculate_eer_0(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -361,7 +357,7 @@ def calculate_eer_05(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0.5) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0.5) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -425,7 +421,7 @@ def calculate_eer_0_rest(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -491,7 +487,7 @@ def calculate_eer_rest(attribute):
     for value in values:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                value) + " AND s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                value) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -549,13 +545,223 @@ def calculate_eer_rest(attribute):
     con.close()
 
 
+def calculate_eer_age():
+    x = [0, 1]
+    con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
+    cur = con.cursor()
+
+    plt.figure()
+    # age <= 20
+    cur.execute(
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i.age <= 20 AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+    data = cur.fetchall()
+    data = np.asarray(data)
+
+    fn_rate = np.empty(shape=0)
+    fp_rate = np.empty(shape=0)
+    eer_found = False
+    eer = 0
+    for umbral in np.arange(0, 1.01, 0.01):
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        for d in data:
+            if d[2] >= umbral:
+                if d[0] == d[1]:
+                    tp += 1
+                else:
+                    fp += 1
+            else:
+                if d[0] == d[1]:
+                    fn += 1
+                else:
+                    tn += 1
+        try:
+            fn_rate_eer = fn / (fn + tp)
+        except ZeroDivisionError:
+            fn_rate_eer = 1
+        try:
+            fp_rate_eer = fp / (fp + tn)
+        except ZeroDivisionError:
+            fp_rate_eer = 1
+        fn_rate = np.append(fn_rate, fn_rate_eer)
+        fp_rate = np.append(fp_rate, fp_rate_eer)
+        if fn_rate_eer > fp_rate_eer and not eer_found:
+            eer = (fn_rate_eer + fp_rate_eer) / 2
+            eer_found = True
+    plt.subplot(221)
+    plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
+    eer = float("{0:.4f}".format(eer))
+    plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
+             label="EER=" + str(eer))
+    plt.xlabel("False Negative Rate")
+    plt.ylabel("False Positive Rate")
+    plt.legend(loc="lower right")
+    plt.title("age <= 20")
+
+    # 20 < age <= 40
+    cur.execute(
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 20 AND i.age <= 40) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+    data = cur.fetchall()
+    data = np.asarray(data)
+
+    fn_rate = np.empty(shape=0)
+    fp_rate = np.empty(shape=0)
+    eer_found = False
+    eer = 0
+    for umbral in np.arange(0, 1.01, 0.01):
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        for d in data:
+            if d[2] >= umbral:
+                if d[0] == d[1]:
+                    tp += 1
+                else:
+                    fp += 1
+            else:
+                if d[0] == d[1]:
+                    fn += 1
+                else:
+                    tn += 1
+        try:
+            fn_rate_eer = fn / (fn + tp)
+        except ZeroDivisionError:
+            fn_rate_eer = 1
+        try:
+            fp_rate_eer = fp / (fp + tn)
+        except ZeroDivisionError:
+            fp_rate_eer = 1
+        fn_rate = np.append(fn_rate, fn_rate_eer)
+        fp_rate = np.append(fp_rate, fp_rate_eer)
+        if fn_rate_eer > fp_rate_eer and not eer_found:
+            eer = (fn_rate_eer + fp_rate_eer) / 2
+            eer_found = True
+    plt.subplot(222)
+    plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
+    eer = float("{0:.4f}".format(eer))
+    plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
+             label="EER=" + str(eer))
+    plt.xlabel("False Negative Rate")
+    plt.ylabel("False Positive Rate")
+    plt.legend(loc="lower right")
+    plt.title("20 < age <= 40")
+
+    # 40 < age <= 60
+    cur.execute(
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 40 AND i.age <= 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+    data = cur.fetchall()
+    data = np.asarray(data)
+
+    fn_rate = np.empty(shape=0)
+    fp_rate = np.empty(shape=0)
+    eer_found = False
+    eer = 0
+    for umbral in np.arange(0, 1.01, 0.01):
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        for d in data:
+            if d[2] >= umbral:
+                if d[0] == d[1]:
+                    tp += 1
+                else:
+                    fp += 1
+            else:
+                if d[0] == d[1]:
+                    fn += 1
+                else:
+                    tn += 1
+        try:
+            fn_rate_eer = fn / (fn + tp)
+        except ZeroDivisionError:
+            fn_rate_eer = 1
+        try:
+            fp_rate_eer = fp / (fp + tn)
+        except ZeroDivisionError:
+            fp_rate_eer = 1
+        fn_rate = np.append(fn_rate, fn_rate_eer)
+        fp_rate = np.append(fp_rate, fp_rate_eer)
+        if fn_rate_eer > fp_rate_eer and not eer_found:
+            eer = (fn_rate_eer + fp_rate_eer) / 2
+            eer_found = True
+    plt.subplot(223)
+    plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
+    eer = float("{0:.4f}".format(eer))
+    plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
+             label="EER=" + str(eer))
+    plt.xlabel("False Negative Rate")
+    plt.ylabel("False Positive Rate")
+    plt.legend(loc="lower right")
+    plt.title("40 < age <= 60")
+
+    # 60 < age
+    cur.execute(
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+    data = cur.fetchall()
+    data = np.asarray(data)
+
+    fn_rate = np.empty(shape=0)
+    fp_rate = np.empty(shape=0)
+    eer_found = False
+    eer = 0
+    for umbral in np.arange(0, 1.01, 0.01):
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        for d in data:
+            if d[2] >= umbral:
+                if d[0] == d[1]:
+                    tp += 1
+                else:
+                    fp += 1
+            else:
+                if d[0] == d[1]:
+                    fn += 1
+                else:
+                    tn += 1
+        try:
+            fn_rate_eer = fn / (fn + tp)
+        except ZeroDivisionError:
+            fn_rate_eer = 1
+        try:
+            fp_rate_eer = fp / (fp + tn)
+        except ZeroDivisionError:
+            fp_rate_eer = 1
+        fn_rate = np.append(fn_rate, fn_rate_eer)
+        fp_rate = np.append(fp_rate, fp_rate_eer)
+        if fn_rate_eer > fp_rate_eer and not eer_found:
+            eer = (fn_rate_eer + fp_rate_eer) / 2
+            eer_found = True
+    plt.subplot(224)
+    plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
+    eer = float("{0:.4f}".format(eer))
+    plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
+             label="EER=" + str(eer))
+    plt.xlabel("False Negative Rate")
+    plt.ylabel("False Positive Rate")
+    plt.legend(loc="lower right")
+    plt.title("age > 60")
+
+
+    plt.tight_layout()
+    plt.savefig("EERPlots/age_umbrals.png")
+    print("Readed age umbrals")
+    plt.close()
+    con.close()
+
 pool = Pool(20)
-# pool.map(calculate_eer_mean, umbral_mean)
-# pool.map(calculate_eer_binary, binary_attributes)
+pool.map(calculate_eer_mean, umbral_mean)
+pool.map(calculate_eer_binary, binary_attributes)
 pool.map(calculate_eer_standard_desviation_mean, standard_deviation_mean)
-# pool.map(calculate_eer_0, umbral_0)
-# pool.map(calculate_eer_05, umbral_05)
-# pool.map(calculate_eer_0_rest, umbral_0_rest)
-# pool.map(calculate_eer_rest, rest)
+pool.map(calculate_eer_0, umbral_0)
+pool.map(calculate_eer_05, umbral_05)
+pool.map(calculate_eer_0_rest, umbral_0_rest)
+pool.map(calculate_eer_rest, rest)
+calculate_eer_age()
 pool.close()
 pool.join()
