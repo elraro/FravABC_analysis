@@ -747,12 +747,69 @@ def calculate_eer_age():
     plt.legend(loc="lower right")
     plt.title("age > 60")
 
-
     plt.tight_layout()
     plt.savefig("EERPlots/age_umbrals.png")
     print("Readed age umbrals")
     plt.close()
     con.close()
+
+
+def calculate_eer():
+    x = [0, 1]
+    con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
+    cur = con.cursor()
+
+    cur.execute(
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+    data = cur.fetchall()
+    data = np.asarray(data)
+
+    fn_rate = np.empty(shape=0)
+    fp_rate = np.empty(shape=0)
+    eer_found = False
+    eer = 0
+    for umbral in np.arange(0, 1.01, 0.01):
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        for d in data:
+            if d[2] >= umbral:
+                if d[0] == d[1]:
+                    tp += 1
+                else:
+                    fp += 1
+            else:
+                if d[0] == d[1]:
+                    fn += 1
+                else:
+                    tn += 1
+        try:
+            fn_rate_eer = fn / (fn + tp)
+        except ZeroDivisionError:
+            fn_rate_eer = 1
+        try:
+            fp_rate_eer = fp / (fp + tn)
+        except ZeroDivisionError:
+            fp_rate_eer = 1
+        fn_rate = np.append(fn_rate, fn_rate_eer)
+        fp_rate = np.append(fp_rate, fp_rate_eer)
+        if fn_rate_eer > fp_rate_eer and not eer_found:
+            eer = (fn_rate_eer + fp_rate_eer) / 2
+            eer_found = True
+
+    plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
+    plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
+             label="EER=" + str(eer))
+    plt.xlabel("False Negative Rate")
+    plt.ylabel("False Positive Rate")
+    plt.legend(loc="lower right")
+    plt.title("EER")
+    plt.savefig("EERPlots/EER.png")
+    print("Readed EER.")
+    plt.close()
+    con.close()
+
 
 pool = Pool(20)
 pool.map(calculate_eer_mean, umbral_mean)
@@ -762,6 +819,8 @@ pool.map(calculate_eer_0, umbral_0)
 pool.map(calculate_eer_05, umbral_05)
 pool.map(calculate_eer_0_rest, umbral_0_rest)
 pool.map(calculate_eer_rest, rest)
-calculate_eer_age()
 pool.close()
 pool.join()
+
+calculate_eer_age()
+calculate_eer()
