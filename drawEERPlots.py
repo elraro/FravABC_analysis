@@ -3,6 +3,7 @@ from multiprocessing.pool import Pool
 import MySQLdb as Mdb
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 lock = threading.Lock()
 
@@ -60,8 +61,14 @@ def calculate_eer_mean(attr):
         "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
-    average = str(data[0][0])
+    average = data[0][0]
     formules = ["<", ">"]
+
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for f in formules:
         cur.execute(
@@ -72,7 +79,7 @@ def calculate_eer_mean(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -100,22 +107,22 @@ def calculate_eer_mean(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if f == "<" else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
         if f == "<":
-            plt.title(attr + " < " + str(average))
+            plt.title(attr + " < " + str("{0:.4f}".format(average)))
         else:
-            plt.title(attr + " > " + str(average))
+            plt.title(attr + " > " + str("{0:.4f}".format(average)))
     plt.tight_layout()
     plt.savefig("EERPlots/" + attr + "_umbral_mean.png")
     print("Readed " + attr)
@@ -128,6 +135,12 @@ def calculate_eer_binary(attr):
     con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
     cur = con.cursor()
 
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for v in x:
         cur.execute(
@@ -138,7 +151,7 @@ def calculate_eer_binary(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -166,15 +179,15 @@ def calculate_eer_binary(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if v == 0 else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -210,6 +223,13 @@ def calculate_eer_standard_desviation_mean(attr):
     print("------")
     lock.release()
     formules = [[">", "<"], ["<", ">"]]
+
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for f in formules:
         if f[0] == ">":
@@ -232,7 +252,7 @@ def calculate_eer_standard_desviation_mean(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -260,15 +280,15 @@ def calculate_eer_standard_desviation_mean(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if f[0] == ">" else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -289,6 +309,12 @@ def calculate_eer_0(attr):
     cur = con.cursor()
     formules = [">", "<"]
 
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for f in formules:
         cur.execute(
@@ -299,7 +325,7 @@ def calculate_eer_0(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -327,15 +353,15 @@ def calculate_eer_0(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if f == ">" else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -353,6 +379,11 @@ def calculate_eer_05(attr):
     cur = con.cursor()
     formules = [">", "<"]
 
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for f in formules:
         cur.execute(
@@ -363,7 +394,7 @@ def calculate_eer_05(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -391,15 +422,15 @@ def calculate_eer_05(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if f == ">" else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -417,6 +448,11 @@ def calculate_eer_0_rest(attr):
     cur = con.cursor()
     formules = ["=", "!="]
 
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for f in formules:
         cur.execute(
@@ -427,7 +463,7 @@ def calculate_eer_0_rest(attr):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -455,15 +491,15 @@ def calculate_eer_0_rest(attr):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = 1 if f == "=" else 2
         plt.subplot(210 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -483,6 +519,12 @@ def calculate_eer_rest(attribute):
     attr = attribute[0]
     values = attribute[1]
 
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     for value in values:
         cur.execute(
@@ -493,7 +535,7 @@ def calculate_eer_rest(attribute):
 
         fn_rate = np.empty(shape=0)
         fp_rate = np.empty(shape=0)
-        eer_found = False
+        eer_dif = sys.maxsize
         eer = 0
         for umbral in np.arange(0, 1.01, 0.01):
             tp = 0
@@ -521,9 +563,9 @@ def calculate_eer_rest(attribute):
                 fp_rate_eer = 1
             fn_rate = np.append(fn_rate, fn_rate_eer)
             fp_rate = np.append(fp_rate, fp_rate_eer)
-            if fn_rate_eer > fp_rate_eer and not eer_found:
-                eer = (fn_rate_eer + fp_rate_eer) / 2
-                eer_found = True
+            if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+                eer_dif = abs(fp_rate_eer - fn_rate_eer)
+                eer = (fp_rate_eer + fn_rate_eer) / 2
 
         i_plot = values.index(value) + 1
         if len(values) == 2:
@@ -531,9 +573,8 @@ def calculate_eer_rest(attribute):
         else:
             plt.subplot(220 + i_plot)
         plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
-        eer = float("{0:.4f}".format(eer))
         plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-                 label="EER=" + str(eer))
+                 label="EER=" + str("{0:.4f}".format(eer)))
         plt.xlabel("False Negative Rate")
         plt.ylabel("False Positive Rate")
         plt.legend(loc="lower right")
@@ -550,6 +591,12 @@ def calculate_eer_age():
     con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
     cur = con.cursor()
 
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     # age <= 20
     cur.execute(
@@ -559,7 +606,7 @@ def calculate_eer_age():
 
     fn_rate = np.empty(shape=0)
     fp_rate = np.empty(shape=0)
-    eer_found = False
+    eer_dif = sys.maxsize
     eer = 0
     for umbral in np.arange(0, 1.01, 0.01):
         tp = 0
@@ -587,14 +634,13 @@ def calculate_eer_age():
             fp_rate_eer = 1
         fn_rate = np.append(fn_rate, fn_rate_eer)
         fp_rate = np.append(fp_rate, fp_rate_eer)
-        if fn_rate_eer > fp_rate_eer and not eer_found:
-            eer = (fn_rate_eer + fp_rate_eer) / 2
-            eer_found = True
+        if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+            eer_dif = abs(fp_rate_eer - fn_rate_eer)
+            eer = (fp_rate_eer + fn_rate_eer) / 2
     plt.subplot(221)
     plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
-    eer = float("{0:.4f}".format(eer))
     plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-             label="EER=" + str(eer))
+             label="EER=" + str("{0:.4f}".format(eer)))
     plt.xlabel("False Negative Rate")
     plt.ylabel("False Positive Rate")
     plt.legend(loc="lower right")
@@ -608,7 +654,7 @@ def calculate_eer_age():
 
     fn_rate = np.empty(shape=0)
     fp_rate = np.empty(shape=0)
-    eer_found = False
+    eer_dif = sys.maxsize
     eer = 0
     for umbral in np.arange(0, 1.01, 0.01):
         tp = 0
@@ -636,14 +682,13 @@ def calculate_eer_age():
             fp_rate_eer = 1
         fn_rate = np.append(fn_rate, fn_rate_eer)
         fp_rate = np.append(fp_rate, fp_rate_eer)
-        if fn_rate_eer > fp_rate_eer and not eer_found:
-            eer = (fn_rate_eer + fp_rate_eer) / 2
-            eer_found = True
+        if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+            eer_dif = abs(fp_rate_eer - fn_rate_eer)
+            eer = (fp_rate_eer + fn_rate_eer) / 2
     plt.subplot(222)
     plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
-    eer = float("{0:.4f}".format(eer))
     plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-             label="EER=" + str(eer))
+             label="EER=" + str("{0:.4f}".format(eer)))
     plt.xlabel("False Negative Rate")
     plt.ylabel("False Positive Rate")
     plt.legend(loc="lower right")
@@ -657,7 +702,7 @@ def calculate_eer_age():
 
     fn_rate = np.empty(shape=0)
     fp_rate = np.empty(shape=0)
-    eer_found = False
+    eer_dif = sys.maxsize
     eer = 0
     for umbral in np.arange(0, 1.01, 0.01):
         tp = 0
@@ -685,14 +730,13 @@ def calculate_eer_age():
             fp_rate_eer = 1
         fn_rate = np.append(fn_rate, fn_rate_eer)
         fp_rate = np.append(fp_rate, fp_rate_eer)
-        if fn_rate_eer > fp_rate_eer and not eer_found:
-            eer = (fn_rate_eer + fp_rate_eer) / 2
-            eer_found = True
+        if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+            eer_dif = abs(fp_rate_eer - fn_rate_eer)
+            eer = (fp_rate_eer + fn_rate_eer) / 2
     plt.subplot(223)
     plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
-    eer = float("{0:.4f}".format(eer))
     plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-             label="EER=" + str(eer))
+             label="EER=" + str("{0:.4f}".format(eer)))
     plt.xlabel("False Negative Rate")
     plt.ylabel("False Positive Rate")
     plt.legend(loc="lower right")
@@ -706,7 +750,7 @@ def calculate_eer_age():
 
     fn_rate = np.empty(shape=0)
     fp_rate = np.empty(shape=0)
-    eer_found = False
+    eer_dif = sys.maxsize
     eer = 0
     for umbral in np.arange(0, 1.01, 0.01):
         tp = 0
@@ -734,14 +778,13 @@ def calculate_eer_age():
             fp_rate_eer = 1
         fn_rate = np.append(fn_rate, fn_rate_eer)
         fp_rate = np.append(fp_rate, fp_rate_eer)
-        if fn_rate_eer > fp_rate_eer and not eer_found:
-            eer = (fn_rate_eer + fp_rate_eer) / 2
-            eer_found = True
+        if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+            eer_dif = abs(fp_rate_eer - fn_rate_eer)
+            eer = (fp_rate_eer + fn_rate_eer) / 2
     plt.subplot(224)
     plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
-    eer = float("{0:.4f}".format(eer))
     plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-             label="EER=" + str(eer))
+             label="EER=" + str("{0:.4f}".format(eer)))
     plt.xlabel("False Negative Rate")
     plt.ylabel("False Positive Rate")
     plt.legend(loc="lower right")
@@ -766,8 +809,16 @@ def calculate_eer():
 
     fn_rate = np.empty(shape=0)
     fp_rate = np.empty(shape=0)
-    eer_found = False
+    eer_dif = sys.maxsize
     eer = 0
+
+    
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
+    plt.figure()
     for umbral in np.arange(0, 1.01, 0.01):
         tp = 0
         tn = 0
@@ -794,17 +845,18 @@ def calculate_eer():
             fp_rate_eer = 1
         fn_rate = np.append(fn_rate, fn_rate_eer)
         fp_rate = np.append(fp_rate, fp_rate_eer)
-        if fn_rate_eer > fp_rate_eer and not eer_found:
-            eer = (fn_rate_eer + fp_rate_eer) / 2
-            eer_found = True
+        if abs(fp_rate_eer - fn_rate_eer) < eer_dif:
+            eer_dif = abs(fp_rate_eer - fn_rate_eer)
+            eer = (fp_rate_eer + fn_rate_eer) / 2
 
     plt.plot(x, x, linestyle="dashed", color="red", linewidth=1)
     plt.plot(fn_rate, fp_rate, linewidth=1, color="blue", alpha=0.5,
-             label="EER=" + str(eer))
+             label="EER=" + str("{0:.4f}".format(eer)))
     plt.xlabel("False Negative Rate")
     plt.ylabel("False Positive Rate")
     plt.legend(loc="lower right")
     plt.title("EER")
+    plt.tight_layout()
     plt.savefig("EERPlots/EER.png")
     print("Readed EER.")
     plt.close()
