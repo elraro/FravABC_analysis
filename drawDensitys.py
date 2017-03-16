@@ -34,6 +34,11 @@ attributes = ["locateFace", "locateEyes", "backgroundUniformity", "isColor",
 def draw_density(attr):
     con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
     cur = con.cursor()
+    plt.rcParams['font.family'] = 'serif'
+    plt.rcParams['font.serif'] = 'cm'
+    plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    plt.rcParams['axes.xmargin'] = 0
+    plt.rcParams['axes.ymargin'] = 0
     plt.figure()
     cur.execute("SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img=i.id WHERE s.score >= 0 AND s.score <= 1 AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
