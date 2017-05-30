@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
+# he quitado AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0
+
 lock = threading.Lock()
 
 # Hardcoded
@@ -58,7 +60,7 @@ def calculate_eer_mean(attr):
 
     # primero vamos a calcular la media
     cur.execute(
-        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
+        "SELECT AVG(i." + attr + ") FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     average = data[0][0]
@@ -73,7 +75,7 @@ def calculate_eer_mean(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                average) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                average) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -135,7 +137,6 @@ def calculate_eer_binary(attr):
     con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
     cur = con.cursor()
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
@@ -145,7 +146,7 @@ def calculate_eer_binary(attr):
     for v in x:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                v) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                v) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -206,7 +207,7 @@ def calculate_eer_standard_desviation_mean(attr):
 
     # primero vamos a calcular la media y la desviacion tipica
     cur.execute(
-        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
+        "SELECT i." + attr + " FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1")
     data = cur.fetchall()
     data = np.asarray(data)
     mean = np.mean(data)
@@ -224,7 +225,6 @@ def calculate_eer_standard_desviation_mean(attr):
     lock.release()
     formules = [[">", "<"], ["<", ">"]]
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
@@ -237,7 +237,7 @@ def calculate_eer_standard_desviation_mean(attr):
                 "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i." + attr +
                 f[0] + str(
                     down) + " AND i." + attr + f[1] + str(
-                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
         else:
@@ -246,7 +246,7 @@ def calculate_eer_standard_desviation_mean(attr):
                 f[0] + str(
                     down) + " OR i." + attr +
                 f[1] + str(
-                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                    top) + ") AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
             data = cur.fetchall()
             data = np.asarray(data)
 
@@ -309,7 +309,6 @@ def calculate_eer_0(attr):
     cur = con.cursor()
     formules = [">", "<"]
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
@@ -319,7 +318,7 @@ def calculate_eer_0(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -388,7 +387,7 @@ def calculate_eer_05(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0.5) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0.5) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -457,7 +456,7 @@ def calculate_eer_0_rest(attr):
     for f in formules:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + f + str(
-                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                0) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -519,7 +518,6 @@ def calculate_eer_rest(attribute):
     attr = attribute[0]
     values = attribute[1]
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
@@ -529,7 +527,7 @@ def calculate_eer_rest(attribute):
     for value in values:
         cur.execute(
             "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i." + attr + "=" + str(
-                value) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+                value) + " AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
         data = cur.fetchall()
         data = np.asarray(data)
 
@@ -591,7 +589,6 @@ def calculate_eer_age():
     con = Mdb.connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
     cur = con.cursor()
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
@@ -600,7 +597,7 @@ def calculate_eer_age():
     plt.figure()
     # age <= 20
     cur.execute(
-        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i.age <= 20 AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE i.age <= 20 AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
     data = cur.fetchall()
     data = np.asarray(data)
 
@@ -648,7 +645,7 @@ def calculate_eer_age():
 
     # 20 < age <= 40
     cur.execute(
-        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 20 AND i.age <= 40) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 20 AND i.age <= 40) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
     data = cur.fetchall()
     data = np.asarray(data)
 
@@ -696,7 +693,7 @@ def calculate_eer_age():
 
     # 40 < age <= 60
     cur.execute(
-        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 40 AND i.age <= 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 40 AND i.age <= 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
     data = cur.fetchall()
     data = np.asarray(data)
 
@@ -744,7 +741,7 @@ def calculate_eer_age():
 
     # 60 < age
     cur.execute(
-        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (i.age > 60) AND (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
     data = cur.fetchall()
     data = np.asarray(data)
 
@@ -803,7 +800,7 @@ def calculate_eer():
     cur = con.cursor()
 
     cur.execute(
-        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1 AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0 AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
+        "SELECT p.clase, i.clase, s.score FROM score_data s INNER JOIN imgs_data i ON s.id_img = i.id INNER JOIN pass_data p ON s.id_pass = p.id WHERE (s.score >= 0 AND s.score <= 1) AND i.locateFace = 1  AND i.faceConfidence >= 0 AND i.numberOfFaces = 1 ")
     data = cur.fetchall()
     data = np.asarray(data)
 
@@ -812,7 +809,6 @@ def calculate_eer():
     eer_dif = sys.maxsize
     eer = 0
 
-    
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = 'cm'
     plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
