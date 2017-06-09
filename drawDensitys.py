@@ -45,7 +45,7 @@ def draw_density(attr):
     data = np.asarray(data)
     plt.hist(data, 20, histtype='stepfilled', facecolor='g', alpha=0.75)
     plt.title(attr)
-    plt.savefig("density/" + attr + ".png")
+    plt.savefig("density/" + attr + ".eps", format='eps', dpi=1000)
     print("Readed " + attr)
     plt.close()
     con.close()
