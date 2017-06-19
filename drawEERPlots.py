@@ -5,15 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-# he quitado AND i.eye0Confidence >= 0 AND i.eye1Confidence >= 0
-
 lock = threading.Lock()
 
 # Hardcoded
-DB_HOST = "localhost"
-DB_USER = "frav"
-DB_PASS = "VXxL4UOLvB6wc01Y3Cxi"
-DB_NAME = "frav_ABC"
+DB_HOST = ""
+DB_USER = ""
+DB_PASS = ""
+DB_NAME = ""
 
 # 0 or 1
 binary_attributes = ["locateFace", "locateEyes", "backgroundUniformity", "isColor",

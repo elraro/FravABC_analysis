@@ -5,10 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Hardcoded
-DB_HOST = "localhost"
-DB_USER = "frav"
-DB_PASS = "VXxL4UOLvB6wc01Y3Cxi"
-DB_NAME = "frav_ABC"
+DB_HOST = ""
+DB_USER = ""
+DB_PASS = ""
+DB_NAME = ""
 
 attributes = ["locateFace", "locateEyes", "backgroundUniformity", "isColor",
               "ISO_19794_5_EyesGazeFrontalBestPractice", "ISO_19794_5_EyesNotRedBestPractice",
